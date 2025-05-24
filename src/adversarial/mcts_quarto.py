@@ -1,8 +1,6 @@
-import math
-import random
-from quarto_game import QuartoGame
+import math, random, time
 
-class MCTSNode:
+class Node:
     def __init__(self, game, parent=None, move=None):
         self.game = game
         self.parent = parent
@@ -10,23 +8,23 @@ class MCTSNode:
         self.children = []
         self.visits = 0
         self.wins = 0
-        self.untried_moves = [
-            (pos, piece) for pos in game.available_positions() for piece in game.available_pieces()
-        ]
+        self.untried_moves = [(r, c, i) for (r, c) in game.available_moves()
+                              for i, p in enumerate(game.all_pieces)
+                              if p in game.available_pieces and p != game.selected_piece]
 
-    def ucb1(self, c=math.sqrt(2)):
+    def ucb1(self, c=1.41):
         if self.visits == 0:
             return float('inf')
         return self.wins / self.visits + c * math.sqrt(math.log(self.parent.visits) / self.visits)
 
-    def select_child(self):
+    def select(self):
         return max(self.children, key=lambda child: child.ucb1())
 
     def expand(self):
         move = self.untried_moves.pop()
         new_game = self.game.copy()
-        new_game.make_move(*move)
-        child = MCTSNode(new_game, parent=self, move=move)
+        new_game.make_move(move)
+        child = Node(new_game, parent=self, move=move)
         self.children.append(child)
         return child
 
@@ -34,52 +32,39 @@ class MCTSNode:
         self.visits += 1
         self.wins += result
 
-# mcts_quarto.py
-def mcts_agent(game, iterations=500):
-    root = MCTSNode(game)
+def quarto_mcts(game, iterations=500, time_limit=None):
+    root = Node(game)
+    start_time = time.time()
 
     for _ in range(iterations):
+        if time_limit and time.time() - start_time > time_limit:
+            break
+
         node = root
-        game_sim = game.copy()
+        sim_game = game.copy()
 
-        # Selection
         while node.untried_moves == [] and node.children:
-            node = node.select_child()
-            game_sim.make_move(*node.move)
+            node = node.select()
+            sim_game.make_move(node.move)
 
-        # Expansion
         if node.untried_moves:
-            move = random.choice(node.untried_moves)
-            game_sim.make_move(*move)
             node = node.expand()
+            sim_game = node.game.copy()
 
-        # Simulation
-        while not game_sim.game_over():
-            available_pos = game_sim.available_positions()
-            available_pieces = game_sim.available_pieces()
-            if not available_pos or not available_pieces:
+        while not sim_game.game_over():
+            moves = [(r, c, i) for (r, c) in sim_game.available_moves()
+                     for i, p in enumerate(sim_game.all_pieces)
+                     if p in sim_game.available_pieces and p != sim_game.selected_piece]
+            if not moves:
                 break
-                
-            pos = random.choice(available_pos)
-            piece = random.choice(available_pieces)
-            game_sim.make_move(pos, piece)
+            move = random.choice(moves)
+            sim_game.make_move(move)
 
-        # Backpropagation
-        winner = game_sim.winner()
-        result = 1 if winner == 'O' else 0  # Assumindo que o MCTS joga como 'O'
+        winner = sim_game.winner()
+        result = 1 if winner == game.current else 0
 
         while node is not None:
             node.update(result)
             node = node.parent
 
-    if not root.children:
-        # Caso de emergência - escolhe qualquer movimento válido
-        available_pos = game.available_positions()
-        available_pieces = game.available_pieces()
-        if available_pos and available_pieces:
-            return (random.choice(available_pos), random.choice(available_pieces))
-        else:
-            raise ValueError("Nenhum movimento válido disponível")
-
-    best_child = max(root.children, key=lambda c: c.visits)
-    return best_child.move
+    return max(root.children, key=lambda c: c.visits).move if root.children else None

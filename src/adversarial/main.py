@@ -1,48 +1,170 @@
-from quarto_game import QuartoGame
-from minimax_quarto import minimax_agent
-from mcts_quarto import mcts_agent
+from quarto import Quarto
+from minimax_quarto import best_move_quarto
+from mcts_quarto import quarto_mcts     
+from colorama import Fore, init
 import random
+import time
 
-def human_turn(game, print_board=True):
-    if print_board:
-        game.print_board()
-    print(f"\nSua vez. Peça pra colocar: {game.given_piece}")
-    r = int(input("Linha (0-3): "))
-    c = int(input("Coluna (0-3): "))
-    print("Peças que você pode escolher:")
-    print(game.available_pieces())
-    piece_input = input("Digite uma peça (ex: 0101): ")
-    piece = tuple(int(x) for x in piece_input)
-    return (r, c), piece
+init(autoreset=True)
 
-def play_game(agent_type='mcts'):
-    game = QuartoGame()
-    first_piece = random.choice(list(game.pieces))
-    game.given_piece = first_piece
+###########################
+# Jogador Humano vs Minimax
+###########################
+def play_human_vs_minimax():
+    game = Quarto()
+    start_piece = random.choice(game.available_pieces)
+    game.selected_piece = start_piece
+    game.available_pieces.remove(start_piece)
 
     while not game.game_over():
-        if game.current_player == 'X':
-            pos, piece = human_turn(game)  # Já imprime o tabuleiro dentro de human_turn()
+        game.print_board()
+        if game.current == 0:
+            row = int(input("Linha: "))
+            col = int(input("Coluna: "))
+            game.print_available_pieces()
+            next_piece = int(input("Índice da peça para o oponente: "))
+            move = (row, col, next_piece)
         else:
-            print("\nRobô pensando...")
-            if agent_type == 'mcts':
-                pos, piece = mcts_agent(game, iterations=500)
-            else:
-                pos, piece = minimax_agent(game, depth=2)
-            print(f"O robô joga em {pos} e dá {piece}")
-            # Mostra o tabuleiro APENAS após a jogada do robô
-            game.print_board()
+            print(Fore.BLUE + "Minimax pensando...")
+            move = best_move_quarto(game, depth=2)
+            print(Fore.BLUE + f"Minimax jogou {move}")
 
-        game.make_move(pos, piece)
+        game.make_move(move)
 
-    # Mostra o estado final do tabuleiro
     game.print_board()
     winner = game.winner()
-    if winner:
-        print(f"\nJogador {winner} venceu!")
-    else:
-        print("\nEmpate!")
+    print(Fore.GREEN + (f"Jogador {winner} venceu!" if winner is not None else "Empate!"))
+
+
+###########################
+# Jogador Humano vs MCTS
+###########################
+def play_human_vs_mcts():
+    game = Quarto()
+    start_piece = random.choice(game.available_pieces)
+    game.selected_piece = start_piece
+    game.available_pieces.remove(start_piece)
+
+    while not game.game_over():
+        game.print_board()
+        if game.current == 0:
+            row = int(input("Linha: "))
+            col = int(input("Coluna: "))
+            game.print_available_pieces()
+            next_piece = int(input("Índice da peça para o oponente: "))
+            move = (row, col, next_piece)
+        else:
+            print(Fore.BLUE + "MCTS pensando...")
+            move = quarto_mcts(game, iterations=1000, time_limit=2)
+            print(Fore.BLUE + f"MCTS jogou {move}")
+
+        game.make_move(move)
+
+    game.print_board()
+    winner = game.winner()
+    print(Fore.GREEN + (f"Jogador {winner} venceu!" if winner is not None else "Empate!"))
+
+
+###########################
+# MCTS vs Minimax
+###########################
+def play_mcts_vs_minimax():
+    game = Quarto()
+    start_piece = random.choice(game.available_pieces)
+    game.selected_piece = start_piece
+    game.available_pieces.remove(start_piece)
+
+    while not game.game_over():
+        game.print_board()
+        if game.current == 0:
+            print(Fore.BLUE + "MCTS pensando...")
+            move = quarto_mcts(game, iterations=1000, time_limit=1)
+            print(Fore.BLUE + f"MCTS jogou {move}")
+        else:
+            print(Fore.RED + "Minimax pensando...")
+            move = best_move_quarto(game, depth=2)
+            print(Fore.RED + f"Minimax jogou {move}")
+
+        game.make_move(move)
+        time.sleep(0.5)
+
+    game.print_board()
+    winner = game.winner()
+    print(Fore.GREEN + (f"Jogador {winner} venceu!" if winner is not None else "Empate!"))
+
+
+###########################
+# MCTS vs MCTS
+###########################
+def play_mcts_vs_mcts():
+    game = Quarto()
+    start_piece = random.choice(game.available_pieces)
+    game.selected_piece = start_piece
+    game.available_pieces.remove(start_piece)
+
+    while not game.game_over():
+        game.print_board()
+        print(Fore.BLUE + f"MCTS Jogador {game.current} pensando...")
+        move = quarto_mcts(game, iterations=1000, time_limit=1)
+        print(Fore.BLUE + f"MCTS Jogador {game.current} jogou {move}")
+        game.make_move(move)
+        time.sleep(0.5)
+
+    game.print_board()
+    winner = game.winner()
+    print(Fore.GREEN + (f"Jogador {winner} venceu!" if winner is not None else "Empate!"))
+
+
+###########################
+# Minimax vs Minimax
+###########################
+def play_minimax_vs_minimax():
+    game = Quarto()
+    start_piece = random.choice(game.available_pieces)
+    game.selected_piece = start_piece
+    game.available_pieces.remove(start_piece)
+
+    while not game.game_over():
+        game.print_board()
+        print(Fore.RED + f"Minimax Jogador {game.current} pensando...")
+        move = best_move_quarto(game, depth=2)
+        print(Fore.RED + f"Minimax Jogador {game.current} jogou {move}")
+        game.make_move(move)
+        time.sleep(0.5)
+
+    game.print_board()
+    winner = game.winner()
+    print(Fore.GREEN + (f"Jogador {winner} venceu!" if winner is not None else "Empate!"))
+
+
+###########################
+# MENU
+###########################
+def main_menu():
+    while True:
+        print(Fore.CYAN + "\n==== MENU QUARTO ====")
+        print("1. Humano vs Minimax")
+        print("2. Humano vs MCTS")
+        print("3. MCTS vs Minimax")
+        print("4. MCTS vs MCTS")
+        print("5. Minimax vs Minimax")
+        print("6. Sair")
+        op = input("Escolha: ")
+        if op == "1":
+            play_human_vs_minimax()
+        elif op == "2":
+            play_human_vs_mcts()
+        elif op == "3":
+            play_mcts_vs_minimax()
+        elif op == "4":
+            play_mcts_vs_mcts()
+        elif op == "5":
+            play_minimax_vs_minimax()
+        elif op == "6":
+            print("Saindo...")
+            break
+        else:
+            print(Fore.RED + "Opção inválida.")
 
 if __name__ == "__main__":
-    mode = input("Jogue contra (mcts/minimax): ").strip().lower()
-    play_game(agent_type=mode)
+    main_menu()
