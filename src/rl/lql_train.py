@@ -6,7 +6,7 @@ from scipy.signal import savgol_filter
 from gymnasium.wrappers import TimeLimit
 
 from taxi_environment import TaxiEnvironment
-from blackjack_environment import BlackjackEnvironment
+from rl.environments.blackjack_environment import BlackjackEnvironment
 
 environment_dict = {
     "Blackjack-v1": BlackjackEnvironment,
