@@ -3,12 +3,12 @@ import numpy as np
 from feature_extractor import FeatureExtractor
 
 important_locations_dict = {
-    'goal_location': [3, 3],  # Posição da meta no ambiente (linha 3, coluna 3).
-    'holes': [(3, 0), (1, 1), (1, 3), (2, 3)],  # Posições dos "buracos".
-    'column_start': 0,  # A primeira coluna do grid.
-    'column_end': 3,  # A última coluna do grid.
-    'row_start': 0,  # A primeira linha do grid.
-    'row_end': 3  # A última linha do grid.
+    'goal_loc': [3, 3],
+    'holes': [(3, 0), (1, 1), (1, 3), (2, 3)],
+    'column_start': 0,
+    'column_end': 3,
+    'row_start': 0,
+    'row_end': 3
 }
 
 class Actions:
@@ -50,10 +50,10 @@ class FrozenLakeFeatureExtractor(FeatureExtractor):
         return self.__actions_one_hot_encoding[action]
 
     def is_terminal_state(self, state):
-        agent_location = self._map_state_to_position(state)
+        agent_loc = self._map_state_to_position(state)
         holes = important_locations_dict['holes']
-        is_holes = agent_location in holes
-        is_goal = agent_location == important_locations_dict['goal_location']
+        is_holes = agent_loc in holes
+        is_goal = agent_loc == important_locations_dict['goal_loc']
         return is_holes or is_goal
 
     def get_actions(self):
@@ -68,8 +68,6 @@ class FrozenLakeFeatureExtractor(FeatureExtractor):
         return feature_vector
 
     def _map_state_to_position(self, state):
-        # Mapeia o estado para uma posição (linha e coluna) no grid.
-        # Exemplo: estado 15 => linha 3, coluna 3.
         grid_size = 4
         return [state // grid_size, state % grid_size]
 
@@ -77,23 +75,23 @@ class FrozenLakeFeatureExtractor(FeatureExtractor):
         return 1.0
 
     def f1(self, state, action):
-        agent_location = self._map_state_to_position(state)
+        agent_loc = self._map_state_to_position(state)
         goal_manhattan_distance = self._manhattanDistance(
-            agent_location, important_locations_dict['goal_location']
+            agent_loc, important_locations_dict['goal_loc']
         )
         return 1 / (goal_manhattan_distance + 1)
 
     def f2(self, state, action):
-        agent_location = self._map_state_to_position(state)
+        agent_loc = self._map_state_to_position(state)
         holes_manhattan_distance = [
-            self._manhattanDistance(agent_location, hole) for hole in important_locations_dict['holes']
+            self._manhattanDistance(agent_loc, hole) for hole in important_locations_dict['holes']
         ]
         return 1 / (min(holes_manhattan_distance) + 1)
 
     def f3(self, state, action):
-        agent_location = self._map_state_to_position(state)
+        agent_loc = self._map_state_to_position(state)
         min_distance_to_wall = min(
-            agent_location[0], 3 - agent_location[0], agent_location[1], 3 - agent_location[1]
+            agent_loc[0], 3 - agent_loc[0], agent_loc[1], 3 - agent_loc[1]
         )
         return 1 / (min_distance_to_wall + 1)
 
@@ -101,9 +99,9 @@ class FrozenLakeFeatureExtractor(FeatureExtractor):
         return abs(loc1[0] - loc2[0]) + abs(loc1[1] - loc2[1])
 
     def f4(self, state, action):
-        agent_location = self._map_state_to_position(state)
+        agent_loc = self._map_state_to_position(state)
         action_dir = self.get_actions()[action]
-        new_agent_location = agent_location.copy()
+        new_agent_location = agent_loc.copy()
 
         if action_dir == Actions.DOWN:
             new_agent_location[0] += 1
@@ -127,9 +125,9 @@ class FrozenLakeFeatureExtractor(FeatureExtractor):
         return 0
 
     def f5(self, state, action):
-        agent_location = self._map_state_to_position(state)
-        column = agent_location[1]
-        row = agent_location[0]
+        agent_loc = self._map_state_to_position(state)
+        column = agent_loc[1]
+        row = agent_loc[0]
         border_bump = (
             column == important_locations_dict['column_start'] and action == Actions.LEFT or
             column == important_locations_dict['column_end'] and action == Actions.RIGHT or
@@ -139,57 +137,52 @@ class FrozenLakeFeatureExtractor(FeatureExtractor):
         return int(border_bump)
 
     def f6(self, state, action):
-        agent_location = self._map_state_to_position(state)
-        goal_location = important_locations_dict['goal_location']
-        euclidean_distance = np.sqrt((agent_location[0] - goal_location[0])**2 + (agent_location[1] - goal_location[1])**2)
+        agent_loc = self._map_state_to_position(state)
+        goal_loc = important_locations_dict['goal_loc']
+        euclidean_distance = np.sqrt((agent_loc[0] - goal_loc[0])**2 + (agent_loc[1] - goal_loc[1])**2)
         return 1 / (euclidean_distance + 1)
 
     def f7(self, state, action):
-        agent_location = self._map_state_to_position(state)
-        goal_location = important_locations_dict['goal_location']
-        # Assume que cada movimento é uma célula de distância
-        steps_to_goal = abs(agent_location[0] - goal_location[0]) + abs(agent_location[1] - goal_location[1])
+        agent_loc = self._map_state_to_position(state)
+        goal_loc = important_locations_dict['goal_loc']
+
+        steps_to_goal = abs(agent_loc[0] - goal_loc[0]) + abs(agent_loc[1] - goal_loc[1])
         return 1 / (steps_to_goal + 1)
 
     def f8(self, state, action):
-        # Verifica se o agente estará no mesmo estado após executar a ação.
-        agent_location = self._map_state_to_position(state)
-        new_location = agent_location.copy()
+        agent_loc = self._map_state_to_position(state)
+        new_loc = agent_loc.copy()
 
         if action == Actions.UP:
-            new_location[0] -= 1
+            new_loc[0] -= 1
         elif action == Actions.DOWN:
-            new_location[0] += 1
+            new_loc[0] += 1
         elif action == Actions.LEFT:
-            new_location[1] -= 1
+            new_loc[1] -= 1
         elif action == Actions.RIGHT:
-            new_location[1] += 1
+            new_loc[1] += 1
 
-        # Verifica se o novo estado é igual ao estado inicial ou fora dos limites
-        if new_location == agent_location or not (0 <= new_location[0] <= 3 and 0 <= new_location[1] <= 3):
+        if new_loc == agent_loc or not (0 <= new_loc[0] <= 3 and 0 <= new_loc[1] <= 3):
             return 1
         return 0
 
     def f9(self, state, action):
-        agent_location = self._map_state_to_position(state)
-        goal_location = important_locations_dict['goal_location']
+        agent_loc = self._map_state_to_position(state)
+        goal_loc = important_locations_dict['goal_loc']
         holes = important_locations_dict['holes']
 
-        # Verificar se há um caminho direto na linha ou coluna sem buracos
         path_clear = True
 
-        if agent_location[0] == goal_location[0]:
-            # Verificar a linha
-            min_col, max_col = sorted([agent_location[1], goal_location[1]])
+        if agent_loc[0] == goal_loc[0]:
+            min_col, max_col = sorted([agent_loc[1], goal_loc[1]])
             for col in range(min_col + 1, max_col):
-                if (agent_location[0], col) in holes:
+                if (agent_loc[0], col) in holes:
                     path_clear = False
                     break
-        elif agent_location[1] == goal_location[1]:
-            # Verificar a coluna
-            min_row, max_row = sorted([agent_location[0], goal_location[0]])
+        elif agent_loc[1] == goal_loc[1]:
+            min_row, max_row = sorted([agent_loc[0], goal_loc[0]])
             for row in range(min_row + 1, max_row):
-                if (row, agent_location[1]) in holes:
+                if (row, agent_loc[1]) in holes:
                     path_clear = False
                     break
         else:

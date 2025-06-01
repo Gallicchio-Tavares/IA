@@ -42,9 +42,8 @@ if __name__ == "__main__":
     penalties_per_episode, rewards_per_episode, cumulative_successful_episodes = agent.train(num_episodes)
     agent.save(args.env_name + "-lql-agent.pkl")
 
-plt.figure(figsize=(12, 8))  # Aumenta o tamanho da figura
+plt.figure(figsize=(12, 8))
 
-# Penalties
 plt.subplot(2, 2, 1)
 plt.plot(savgol_filter(penalties_per_episode, 51, 2), color='red')
 plt.title(f"Penalties per Episode\n({args.env_name})", fontsize=10)
@@ -52,7 +51,6 @@ plt.xlabel("Episode")
 plt.ylabel("Penalties")
 plt.grid(alpha=0.3)
 
-# Rewards
 plt.subplot(2, 2, 2)
 plt.plot(savgol_filter(rewards_per_episode, 51, 2), color='green')
 plt.title(f"Rewards per Episode\n({args.env_name})", fontsize=10)
@@ -60,7 +58,6 @@ plt.xlabel("Episode")
 plt.ylabel("Total Reward")
 plt.grid(alpha=0.3)
 
-# Successful episodes
 plt.subplot(2, 2, 3)
 plt.plot(cumulative_successful_episodes, color='blue')
 plt.title(f"Cumulative Successful Episodes\n({args.env_name})", fontsize=10)
@@ -68,7 +65,6 @@ plt.xlabel("Episode")
 plt.ylabel("Success Count")
 plt.grid(alpha=0.3)
 
-# Epsilon decay
 plt.subplot(2, 2, 4)
 plt.plot(agent.epsilon_history, color='purple')
 plt.title(f"Epsilon Decay\n({args.env_name})", fontsize=10)
@@ -76,6 +72,6 @@ plt.xlabel("Episode")
 plt.ylabel("Epsilon")
 plt.grid(alpha=0.3)
 
-plt.tight_layout()  # Melhora o espaçamento automático
+plt.tight_layout()
 plt.savefig(f"{args.env_name}-lql-results.png", dpi=300)
 plt.close()
