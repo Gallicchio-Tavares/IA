@@ -1,8 +1,6 @@
 import argparse
 import numpy as np
 import gymnasium as gym
-import pickle
-import os
 from tql import QLearningAgentTabular
 
 if __name__ == "__main__":
@@ -11,10 +9,8 @@ if __name__ == "__main__":
     parser.add_argument("--successful_episode_reward_value", required=True, type=int, help="Reward value received by the agent when it reaches the end of an episode.")
     args = parser.parse_args()
 
-    # Load the agent
     agent = QLearningAgentTabular.load_agent(args.env_name + "-tql-agent.pkl")
 
-    # Render the agent solving the problem
     def render_agent(env, q_table, episodes=1, max_steps=100):
         """Render the agent solving the problem using the learned Q-table."""
         for episode in range(episodes):
@@ -42,7 +38,6 @@ if __name__ == "__main__":
 
     render = True
 
-    # Environment
     env = gym.make(args.env_name, render_mode='human' if render else None)
 
     print("\nRendering the agent solving the problem...")

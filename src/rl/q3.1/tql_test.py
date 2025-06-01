@@ -1,14 +1,5 @@
 import argparse
 from tql import QLearningAgentTabular
-# import gymnasium as gym
-# from environments.gym_environment import GymEnvironment
-# from environments.blackjack_environment import BlackjackEnvironment
-
-# environment_dict = {
-#     "Blackjack-v1": BlackjackEnvironment,
-#     "CliffWalking-v0": GymEnvironment,
-#     "FrozenLake-v1": GymEnvironment
-# }
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -17,14 +8,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     assert args.num_episodes > 0
 
-    # Carrega o agente treinado
     model_path = f"output/modelos/{args.env_name}-tql-agent.pkl"
     agent = QLearningAgentTabular.load_agent(model_path)
-
-    # modo humanizado:
-    # env = gym.make(args.env_name, render_mode="human")
-    # env = environment_dict[args.env_name](env)
-    # agent.env = env 
 
     total_actions = 0
     total_rewards = 0
@@ -58,7 +43,6 @@ if __name__ == "__main__":
         if reward > 0:
             successful_episodes += 1
 
-    # Métricas finais
     avg_episode_length = total_actions / args.num_episodes
     avg_rewards = total_rewards / args.num_episodes
     success_rate = (successful_episodes / args.num_episodes) * 100

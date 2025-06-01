@@ -8,6 +8,10 @@ from tql import QLearningAgentTabular
 from environments.gym_environment import GymEnvironment
 from environments.blackjack_environment import BlackjackEnvironment
 
+import os
+
+os.makedirs("output/modelos", exist_ok=True)
+os.makedirs("output/graficos", exist_ok=True)
 
 environment_dict = {
     "Blackjack-v1": BlackjackEnvironment,
@@ -30,11 +34,9 @@ if __name__ == "__main__":
     learning_rate = args.learning_rate
     gamma = args.gamma
 
-    # Cria o ambiente
     env = gym.make(env_name).env
     env = environment_dict[env_name](env)
 
-    # Cria o agente
     agent = QLearningAgentTabular(
         env=env,
         decay_rate=decay_rate,
@@ -42,13 +44,10 @@ if __name__ == "__main__":
         gamma=gamma
     )
 
-    # Treina
     rewards = agent.train(num_episodes)
 
-    # Salva agente
     agent.save(f"output/modelos/{env_name}-tql-agent.pkl")
 
-    # Plota curva de aprendizado
     plt.plot(savgol_filter(rewards, 1001, 2))
     plt.title(f"Curva de aprendizado suavizada ({env_name})")
     plt.xlabel('Episódio')
@@ -56,7 +55,6 @@ if __name__ == "__main__":
     plt.savefig(f"output/graficos/{env_name}-tql-learning_curve.png")
     plt.close()
 
-    # Plota decaimento de epsilon
     plt.plot(agent.epsilons_)
     plt.title(f"Decaimento do valor de ε ({env_name})")
     plt.xlabel('Episódio')
