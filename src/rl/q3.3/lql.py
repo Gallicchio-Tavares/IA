@@ -1,14 +1,16 @@
 from timeit import default_timer as timer
 import pickle
 import numpy as np
-from environment import Environment
+from environments.environment import Environment
 
-from taxi_feature_extractor import TaxiFeatureExtractor
+from cliffwalking_feature_extractor import CliffWalkingFeatureExtractor
+from frozenlake_feature_extractor import FrozenLakeFeatureExtractor
 from blackjack_feature_extractor import BlackjackFeatureExtractor
 
 feature_extractors_dict = {
-  "Blackjack-v1": BlackjackFeatureExtractor,
-  "Taxi-v3": TaxiFeatureExtractor
+    "Blackjack-v1": BlackjackFeatureExtractor,
+    "CliffWalking-v0": CliffWalkingFeatureExtractor,
+    "FrozenLake-v1": FrozenLakeFeatureExtractor,
 }
 
 class QLearningAgentLinear:

@@ -1,0 +1,12 @@
+python lql_train.py --env_name Blackjack-v1 --learning_rate 0.5 --gamma 0.7
+
+python lql_train.py --env_name CliffWalking-v0 --learning_rate 0.4 --gamma 0.7
+
+python lql_train.py --env_name FrozenLake-v1 --learning_rate 0.15 --gamma 0.9
+
+
+python lql_test.py --env_name Blackjack-v1
+
+python lql_test.py --env_name CliffWalking-v0
+
+python lql_test.py --env_name FrozenLake-v1

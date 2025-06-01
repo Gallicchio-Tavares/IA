@@ -3,12 +3,13 @@ from lql import QLearningAgentLinear
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env_name", type=str, default="Taxi-v3", help="Environment name")
+    parser.add_argument("--env_name", type=str, default="Blackjack-v1", help="Environment name")
     parser.add_argument("--num_episodes", type=int, default=1000, help="Number of episodes")
     args = parser.parse_args()
     assert args.num_episodes > 0
 
-    agent = QLearningAgentLinear.load_agent(args.env_name + "-lql-agent.pkl")
+    model_path = f"output/modelos/{args.env_name}-lql-agent.pkl"
+    agent = QLearningAgentLinear.load_agent(model_path)
 
     total_actions, total_rewards = 0, 0
 
