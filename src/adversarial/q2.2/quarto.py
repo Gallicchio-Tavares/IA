@@ -16,18 +16,29 @@ class Quarto(BoardGame):
         if piece == ' ' or piece is None:
             return "    "
         shape = "●" if piece[0] else "■"
-        color = Fore.WHITE if piece[1] else Fore.BLACK
+        color = Fore.RED if piece[1] else Fore.BLUE
         height = "▲" if piece[2] else "▼"
         hole = "○" if piece[3] else "•"
         return f"{color}{shape}{height}{hole}{Style.RESET_ALL}"
+
 
     def available_moves(self):
         return [(r, c) for r in range(4) for c in range(4) if self.board[r][c] == ' ']
 
     def make_move(self, move):
         row, col, next_piece_idx = move
+
+        if not (0 <= row < 4) or not (0 <= col < 4):
+            raise ValueError("Posição fora do tabuleiro.")
+
         if (row, col) not in self.available_moves():
-            return False
+            raise ValueError("Posição já ocupada.")
+
+        if next_piece_idx is not None:
+            if not (0 <= next_piece_idx < len(self.all_pieces)):
+                raise ValueError("Índice da peça inválido.")
+            if self.all_pieces[next_piece_idx] not in self.available_pieces:
+                raise ValueError("Peça já foi utilizada.")
 
         self.board[row][col] = self.selected_piece
         self.pieces_on_board.append(self.selected_piece)
@@ -55,7 +66,6 @@ class Quarto(BoardGame):
         lines.append([self.board[i][3 - i] for i in range(4)])
 
         for line in lines:
-            # Filtra apenas células ocupadas
             if any(cell == ' ' or cell is None for cell in line):
                 continue
 
@@ -89,7 +99,7 @@ class Quarto(BoardGame):
 
         for idx, (i, p) in enumerate(pieces_with_idx):
             shape = "●" if p[0] else "■"
-            color = Fore.WHITE if p[1] else Fore.BLACK
+            color = Fore.RED if p[1] else Fore.BLUE
             height = "▲" if p[2] else "▼"
             hole = "○" if p[3] else "•"
             piece_str = f"{color}{shape}{height}{hole}{Style.RESET_ALL}"

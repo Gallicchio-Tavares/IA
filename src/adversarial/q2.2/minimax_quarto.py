@@ -1,4 +1,3 @@
-from quarto import Quarto
 import random
 
 def evaluate(game, player):
